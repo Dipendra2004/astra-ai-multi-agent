@@ -3,23 +3,69 @@
 [![Project status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/Dipendra2004/astra-ai-multi-agent)
 [![License](https://img.shields.io/badge/license-UNLICENSED-orange)]
 
-AstraAI is a multi-agent AI assistant built with a React frontend and a Node.js microservices backend. Specialized agents (Chat, Coding, Search, PDF, Vision, PPT, etc.) coordinate via LangGraph to handle different task types.
+## AstraAI 
+Is a full-stack AI assistant built with React, Node.js, LangGraph, and a microservices-based backend.
 
-Note: this README is currently located at frontend/README.md. If the content describes the whole project, consider moving it to the repository root or scope it specifically to the frontend service.
+The goal of AstraAI is to create a single AI platform where different types of tasks can be handled by specialized AI agents such as Chat, Coding, Search, PDF, Vision, and PPT agents.
 
-Table of Contents
+## Project Status
+AstraAI is currently under development.
+The core architecture, authentication, chat system, conversation management, Redis memory, API Gateway, LangGraph workflow, and initial AI agents have been implemented.
 
-- Quickstart
-- Prerequisites
-- Environment (.env) examples
-- Running (local and Docker)
-- Architecture overview
-- Features
-- Tech stack
-- Authentication / Firebase setup
-- Contribution
-- Roadmap
-- License
+More agents, UI improvements, error handling, testing, optimization, and deployment features are still being worked on.
+
+
+## Features
+
+- AI chat interface
+- Multiple specialized AI agents
+- Chat agent
+- Coding agent
+- Search agent
+- PDF agent
+- Vision agent
+- PPT agent
+- Agent selection from the chat interface
+- Conversation management
+- Persistent message history
+- Redis-based conversation memory
+- MongoDB message storage
+- Firebase authentication
+- JWT authentication
+- API Gateway
+- Microservices architecture
+- Markdown responses
+- Code block rendering
+- AI model integration using Groq and Gemini
+
+## Architecture
+
+```text
+                        React Frontend
+                              |
+                              v
+                       API Gateway
+                         :8000
+                              |
+              +---------------+---------------+
+              |               |               |
+              v               v               v
+         Auth Service    Chat Service    Agent Service
+           :8001            :8002            :8003
+                                             |
+                                             v
+                                      LangGraph Router
+                                             |
+                  +----------+---------+-----+-----+----------+
+                  |          |         |           |          |
+                  v          v         v           v          v
+                Chat      Coding    Search       PDF       Vision
+                  |          |         |           |          |
+                  +----------+---------+-----+-----+----------+
+                                             |
+                                             v
+                                      AI Model Services
+                                      Groq / Gemini
 
 Quickstart
 
