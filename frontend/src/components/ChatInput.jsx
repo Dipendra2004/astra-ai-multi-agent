@@ -10,10 +10,10 @@ import {
   Send,
   Zap,
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import sendMessage from "../features/sendMessage";
 import { useDispatch, useSelector } from "react-redux";
-import { addMessage, setMessages } from "../redux/messageSlice";
+import { addMessage, setArtifacts } from "../redux/messageSlice";
 import { createConversation } from "../features/createConversation";
 import {
   addConversation,
@@ -54,6 +54,7 @@ function ChatInput() {
     dispatch(addMessage({ role: "user", content: value.trim() }));
     setValue("");
     const data = await sendMessage(payload);
+    dispatch(setArtifacts(data.artifacts || []))
     dispatch(addMessage({ role: "assistant", content: data?.answer, images:data?.images}));
     console.log(data);
   };
