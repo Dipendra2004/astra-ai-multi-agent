@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Mic,
   Paperclip,
+  Presentation,
   Send,
   Zap,
 } from "lucide-react";
@@ -80,6 +81,11 @@ function ChatInput() {
       id: "pdf",
       icon: FileText,
       label: "PDF",
+    },
+    {
+      id: "ppt",
+      icon: Presentation,
+      label: "PPT",
     },
 
     {
