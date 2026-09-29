@@ -45,6 +45,13 @@ export const codingAgent = async (state) => {
         - Beautiful spacing
         - Single page unless user asks otherwise.
 
+        IMAGES
+        =========================
+
+        Always use real Unplash images.
+
+        Never use placeholders.
+
         Return ONLY valid JSON.
 
         Schema:
