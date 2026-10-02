@@ -5,6 +5,7 @@ import { addMessage } from "../config/memory.js";
 export const agent = async (req, res) => {
   try {
     const { prompt, conversationId, agent } = req.body;
+    const userId = req.headers["x-user-id"];
 
     await axios.post(`${process.env.CHAT_SERVICE}/save-message`, {
       conversationId,
@@ -15,6 +16,11 @@ export const agent = async (req, res) => {
       prompt,
       conversationId,
       agent,
+      userId,
+    });
+    await axios.post(`${process.env.AUTH_SERVICE}/deduct-credits`, {
+      userId,
+      agent,
     });
     console.log("results", result);
     await addMessage(conversationId, "user", prompt);
@@ -24,16 +30,15 @@ export const agent = async (req, res) => {
       role: "assistant",
       content: result?.aiResponse,
       images: result?.images,
-      artifacts:result?.artifacts
+      artifacts: result?.artifacts,
     });
 
     return res.status(200).json({
       answer: result?.aiResponse,
       images: result?.images,
-      artifacts:result?.artifacts
+      artifacts: result?.artifacts,
     });
-  } 
-  catch (error) {
+  } catch (error) {
     console.error(error);
     return res.status(500).json({ message: `agent error ${error}` });
   }

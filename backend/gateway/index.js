@@ -1,7 +1,7 @@
 import express from "express"
 import dotenv from "dotenv"
 import proxy from "express-http-proxy"
-dotenv.config()
+dotenv.config({ override: true })
 import cors from "cors"
 import cookieParser from "cookie-parser"
 import protect from "./middleware/auth.middleware.js"
@@ -20,7 +20,8 @@ app.use(morgan("dev"))
 app.use(cookieParser())
 app.use("/api/auth",proxy(process.env.AUTH_SERVICE))
 app.use("/api/chat",proxyWithHeader(process.env.CHAT_SERVICE))
-app.use("/api/agent",protect,proxy(process.env.AGENT_SERVICE))
+app.use("/api/billing",protect,proxyWithHeader(process.env.BILLING_SERVICE))
+app.use("/api/agent",protect,proxyWithHeader(process.env.AGENT_SERVICE))
 app.get("/api/me",protect,getCurrentuser)
 app.get("/", (req,res)=>{
     res.json({message:"Hello from gateway"})

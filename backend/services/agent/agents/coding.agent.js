@@ -1,4 +1,5 @@
 import { getModel } from "../config/llmModels.js";
+import { deductCredits } from "../utils/deductCredits.js";
 
 export const codingAgent = async (state) => {
   const intentLlm = await getModel("intent");
@@ -87,20 +88,22 @@ export const codingAgent = async (state) => {
         ${state.prompt}
         
         `;
-        const res = await llm.invoke(prompt)
-        const data = JSON.parse(res.content)
-        return{
-            ...state,
-            aiResponse:"Code Generated Successfully",
-            artifacts:[
-                {
-                    id:Date.now(),
-                    type:"Project",
-                    files:data.files || [],
-                    title:state.prompt
-                }
-            ]
-        }
+    const res = await llm.invoke(prompt);
+    console.log(res);
+    const data = JSON.parse(res.content);
+    await deductCredits(state.userId, "coding");
+    return {
+      ...state,
+      aiResponse: "Code Generated Successfully",
+      artifacts: [
+        {
+          id: Date.now(),
+          type: "Project",
+          files: data.files || [],
+          title: state.prompt,
+        },
+      ],
+    };
   }
 
   const res = await llm.invoke(`
@@ -129,12 +132,13 @@ export const codingAgent = async (state) => {
     User Request:
 
     ${state.prompt}
-    `)
+    `);
 
-    const data = res.content
-    return {
+  const data = res.content;
+  await deductCredits(state.userId, "coding");
+  return {
     ...state,
-    aiResponse:data,
-    artifacts:[]
-    }
+    aiResponse: data,
+    artifacts: [],
+  };
 };

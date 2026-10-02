@@ -21,6 +21,8 @@ import {
   setSelectedConversation,
 } from "../redux/conversationSlice";
 import { updateConversation } from "../features/updateConversation";
+import getCurrentUser from "../features/getCurrentUser.js";
+import { setUserdata } from "../redux/userSlice.js";
 
 function ChatInput() {
   const [value, setValue] = useState("");
@@ -56,50 +58,19 @@ function ChatInput() {
     const data = await sendMessage(payload);
     dispatch(setArtifacts(data.artifacts || []))
     dispatch(addMessage({ role: "assistant", content: data?.answer, images:data?.images}));
-    console.log(data);
+
+    const updatedUser = await getCurrentUser();
+    dispatch(setUserdata(updatedUser));
   };
 
   const agents = [
-    {
-      id: "auto",
-      icon: Zap,
-      label: "Auto",
-    },
-
-    {
-      id: "chat",
-      icon: MessageSquare,
-      label: "Chat",
-    },
-
-    {
-      id: "coding",
-      icon: Code2,
-      label: "Coding",
-    },
-
-    {
-      id: "pdf",
-      icon: FileText,
-      label: "PDF",
-    },
-    {
-      id: "ppt",
-      icon: Presentation,
-      label: "PPT",
-    },
-
-    {
-      id: "vision",
-      icon: ImageIcon,
-      label: "Vision",
-    },
-
-    {
-      id: "search",
-      icon: Globe,
-      label: "Search",
-    },
+    { id: "auto", icon: Zap, label: "Auto" },
+    { id: "chat", icon: MessageSquare, label: "Chat" },
+    { id: "coding", icon: Code2, label: "Coding" },
+    { id: "pdf", icon: FileText, label: "PDF" },
+    { id: "ppt", icon: Presentation, label: "PPT" },
+    { id: "vision", icon: ImageIcon, label: "Vision" },
+    { id: "search", icon: Globe, label: "Search" },
   ];
 
   return (
@@ -124,7 +95,6 @@ function ChatInput() {
                   size={14}
                   className={isActive ? "text-white" : "text-slate-500"}
                 />
-
                 {agent.label}
               </div>
             );
