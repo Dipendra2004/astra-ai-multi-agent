@@ -26,6 +26,7 @@ import {
 import { createConversation } from "../features/createConversation";
 import logOut from "../features/logOut";
 import { setUserdata } from "../redux/userSlice";
+import { clearMessages } from "../redux/messageSlice";
 import BillingDrawer from "./BillingDrawer";
 function SideBar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -60,10 +61,15 @@ function SideBar() {
           <PanelRight />
         </button>
         <button
-          className="flex item-center justify-center w-9 h-9 rounded-xl text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors duration-150 bg-transparent border-none cursor-pointer"
-          onClick={() => dispatch(setSelectedConversation(null))}
+          className="w-full flex items-center justify-center gap-2 text-sm font-medium text-white bg-linear-to-br from-indigo-500 to-violet-700 rounded-xl py-2.5 border-none cursor-pointer hover:opacity-90 transition-opacity duration-150"
+          onClick={() => {
+            dispatch(clearMessages());
+            dispatch(setSelectedConversation(null));
+            setMobileOpen(false);
+          }}
         >
-          <PlusIcon size={17} />
+          <Plus size={15} />
+          New Chat
         </button>
 
         <div className="flex-1 overflow-y-auto px-2.5 pb-2 scrollbar-width:none [&::-webit-scrollbar]:hidden pt-5">
@@ -137,19 +143,23 @@ function SideBar() {
 
             <button
               onClick={() => setMobileOpen(false)}
-              className="lg:hidden flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors duration-150 bg-transparent border-none cursor-pointer">
-              <X/>
+              className="lg:hidden flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors duration-150 bg-transparent border-none cursor-pointer"
+            >
+              <X />
             </button>
 
             <span className="text-[16px] font-semibold text-slate-100 tracking-tight flex-1">
               AstraAI
             </span>
             <span className="text-[10px] font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full tracking-wide">
-              free
+              {userData.plan || "free"}
             </span>
             <button
               className="flex-item-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors duration-150 bg-transparent border-none cursor-pointer"
-              onClick={() => dispatch(setSelectedConversation(null))}
+              onClick={() => {
+                dispatch(clearMessages());
+                dispatch(setSelectedConversation(null));
+              }}
             >
               <PenSquare size={14} />
             </button>
@@ -157,7 +167,10 @@ function SideBar() {
           <div className="px-4 pt-4 pb-1">
             <button
               className="w-full flex items-center justify-center gap-2 text-sm font-medium text-white bg-linear-to-br from-indigo-500 to-violet-700 rounded-xl py-2.5 border-none cursor-pointer hover:opacity-90 transition-opacity duration-150"
-              onClick={() => dispatch(setSelectedConversation(null))}
+              onClick={() => {
+                dispatch(clearMessages());
+                dispatch(setSelectedConversation(null));
+              }}
             >
               <Plus size={15} />
               New Chat
@@ -180,7 +193,10 @@ function SideBar() {
               return (
                 <div
                   key={conv._id}
-                  onClick={() => dispatch(setSelectedConversation(conv))}
+                  onClick={() => {
+                    dispatch(setSelectedConversation(conv));
+                    setMobileOpen(false);
+                  }}
                   className={`flex items-center gap-2.5 cursor-pointer mb-0.5 px-3 py-2.5 rounded-[10px] border transition-colors duration-150 ${isActive ? "bg-indigo-500/10 border-indigo-500/18" : "bg-transparent border-transparent"}`}
                 >
                   <div
@@ -221,7 +237,7 @@ function SideBar() {
                     {userData?.name || "user"}
                   </p>
                   <p className="text-[11px] text-slate-600 mt-px">
-                    {"free Plan"}
+                    {`${userData?.plan}`|| "free plan"}
                   </p>
                 </div>
                 <div className="flex gap-1">
@@ -249,12 +265,9 @@ function SideBar() {
             )}
           </div>
         </div>
-
-        <BillingDrawer
-          open={showBilling}
-          onClose={() => setShowBilling(false)}
-        />
       </div>
+
+      <BillingDrawer open={showBilling} onClose={() => setShowBilling(false)} />
     </>
   );
 }
