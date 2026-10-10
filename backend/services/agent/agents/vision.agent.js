@@ -3,9 +3,11 @@ import { getModel } from "../config/llmModels.js";
 import { uploadToS3 } from "../utils/uploadToS3.js";
 import { getFromS3 } from "../utils/getFromS3.js";
 import { deductCredits } from "../utils/deductCredits.js";
+import { checkAgentLimit } from "../config/agentlimit.js";
 
 export const visionAgent = async (state) => {
   try {
+    await checkAgentLimit(state.userId,"image")
     const llm = await getModel("image");
 
     const res = await llm.invoke(`
@@ -79,7 +81,11 @@ ${state.prompt}
 `,
     };
   } catch (error) {
-    console.error("Vision Agent Error:", error.response?.data || error.message);
+    console.log(error);
+    return {
+      ...state,
+      aiResponse: error?.data?.message || "failed to generate image",
+    };
 
     return {
       ...state,

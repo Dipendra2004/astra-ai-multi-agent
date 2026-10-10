@@ -152,7 +152,7 @@ function SideBar() {
               AstraAI
             </span>
             <span className="text-[10px] font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full tracking-wide">
-              {userData.plan || "free"}
+              {userData?.plan || "free"}
             </span>
             <button
               className="flex-item-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors duration-150 bg-transparent border-none cursor-pointer"

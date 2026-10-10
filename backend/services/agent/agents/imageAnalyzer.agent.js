@@ -2,9 +2,11 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getModel } from "../config/llmModels.js";
 import fs from "fs/promises";
 import { deductCredits } from "../utils/deductCredits.js";
+import { checkAgentLimit } from "../config/agentlimit.js";
 
 export const imageAnalyzer = async (state) => {
   try {
+    await checkAgentLimit(state.userId, "image");
     const llm = await getModel("imageAnalyzer");
 
     const userId = state.userId;
@@ -51,7 +53,12 @@ Rules:
       aiResponse: response.content,
     };
   } catch (error) {
-    console.error("Image Analyzer Error:", error);
+    console.log(error);
+    return {
+      ...state,
+      aiResponse: error?.data?.message || "failed to analyze image",
+      artifacts: [],
+    };
 
     return {
       ...state,
