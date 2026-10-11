@@ -1,4 +1,8 @@
-import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
 import { getModel } from "../config/llmModels.js";
 import { getMemory } from "../config/memory.js";
 import { deductCredits } from "../utils/deductCredits.js";
@@ -6,17 +10,18 @@ import { checkAgentLimit } from "../config/agentLimit.js";
 
 export const chatAgent = async (state) => {
   try {
+    await checkAgentLimit(state.userId, "chat");
 
-    await checkAgentLimit(state.userId,"chat")
+    const llm = await getModel("chat");
 
-     const llm = await getModel("chat");
+    const history = await getMemory(state.conversationId);
 
-  const history = await getMemory(state.conversationId)
+    const searchContext = state.searchResults
+      ? `Web Search Results: ${JSON.stringify(state.searchResults)} Answer the user using only the above search results.
+  `
+      : "";
 
-  const searchContext  = state.searchResults? `Web Search Results: ${JSON.stringify(state.searchResults)} Answer the user using only the above search results.
-  `:""
-
-  const systemPrompt = `
+    const systemPrompt = `
   You are AstraAI, an intelligent AI assistant.
 
   ${searchContext}
@@ -39,37 +44,38 @@ export const chatAgent = async (state) => {
   - Never write headings and content on the same line.
   - Never generate large walls of text.
   `;
-  const messages = [
-    new SystemMessage(systemPrompt)
-  ];
+    const messages = [new SystemMessage(systemPrompt)];
 
-history.forEach(msg => {
-    if (msg.role === "user") {
-        messages.push(new HumanMessage(msg.content))
-    }
+    history.forEach((msg) => {
+      if (msg.role === "user") {
+        messages.push(new HumanMessage(msg.content));
+      }
 
-    if (msg.role === "assistant") {
-        messages.push(new AIMessage(msg.content))
-    }
-});
+      if (msg.role === "assistant") {
+        messages.push(new AIMessage(msg.content));
+      }
+    });
 
-  messages.push(new HumanMessage(state.prompt))
-  console.log(messages)
+    messages.push(new HumanMessage(state.prompt));
+    console.log(messages);
 
+    const response = await llm.invoke(messages);
+    await deductCredits(state.userId, "chat");
 
-  const response = await llm.invoke(messages);
-  await deductCredits(state.userId,"chat")
-
-  return {
-    ...state,
-    aiResponse: response.content,
-  };
-  } catch (error) {
-    console.log(error);
     return {
       ...state,
-      aiResponse: error?.data?.message || "failed to generate chat",
+      aiResponse: response.content,
+    };
+  } catch (error) {
+    console.error("Chat agent error:", error);
+
+    return {
+      ...state,
+      aiResponse:
+        error?.response?.data?.message ||
+        error?.data?.message ||
+        error?.message ||
+        "Failed to generate chat. Please try again.",
     };
   }
- 
 };
