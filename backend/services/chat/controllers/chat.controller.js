@@ -73,4 +73,43 @@ export const getMessages = async (req,res) => {
 }
 
 
+export const deleteConversation = async (req, res) => {
+  try {
+    const userId = req.headers["x-user-id"];
+    const { conversationId } = req.params;
+
+    // Find the conversation belonging to this user
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      userId,
+    });
+
+    if (!conversation) {
+      return res.status(404).json({
+        message: "Conversation not found",
+      });
+    }
+
+    // Delete all messages associated with this conversation
+    await Message.deleteMany({ conversationId });
+
+    // Delete the conversation itself
+    await Conversation.deleteOne({
+      _id: conversationId,
+      userId,
+    });
+
+    return res.status(200).json({
+      message: "Conversation deleted successfully",
+      conversationId,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: `Delete conversation error: ${error.message}`,
+    });
+  }
+};
+
+
+
 

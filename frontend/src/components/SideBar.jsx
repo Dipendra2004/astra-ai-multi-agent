@@ -10,6 +10,7 @@ import {
   PenSquare,
   PenSquareIcon,
   Plus,
+  Trash2,
   PlusIcon,
   User,
   X,
@@ -28,6 +29,8 @@ import logOut from "../features/logOut";
 import { setUserdata } from "../redux/userSlice";
 import { clearMessages } from "../redux/messageSlice";
 import BillingDrawer from "./BillingDrawer";
+import { deleteConversation as deleteConversationApi } from "../features/deleteConversation";
+import { deleteConversation as deleteConversationAction } from "../redux/conversationSlice";
 function SideBar() {
   const [collapsed, setCollapsed] = useState(false);
   const dispatch = useDispatch();
@@ -49,6 +52,30 @@ function SideBar() {
   const handleCreateConversation = async () => {
     const data = await createConversation();
     dispatch(addConversation(data));
+  };
+
+  // ADD THE DELETE HANDLER HERE
+
+  const handleDeleteConversation = async (e, conv) => {
+    e.stopPropagation();
+
+    const confirmed = window.confirm(`Delete "${conv.title || "New Chat"}"?`);
+
+    if (!confirmed) return;
+
+    try {
+      await deleteConversationApi(conv._id);
+
+      dispatch(deleteConversationAction(conv._id));
+
+      if (selectedConversation?._id === conv._id) {
+        dispatch(setSelectedConversation(null));
+        dispatch(clearMessages());
+      }
+    } catch (error) {
+      console.error("Failed to delete conversation:", error);
+      window.alert("Failed to delete conversation. Please try again.");
+    }
   };
 
   if (collapsed) {
@@ -78,14 +105,46 @@ function SideBar() {
             return (
               <div
                 key={conv._id}
-                onClick={() => dispatch(setSelectedConversation(conv))}
-                className={`flex items-center gap-2.5 cursor-pointer mb-0.5 px-3 py-2.5 rounded-[10px] border transition-colors duration-150 ${isActive ? "bg-indigo-500/10 border-indigo-500/18" : "bg-transparent border-transparent"}`}
+                onClick={() => {
+                  dispatch(setSelectedConversation(conv));
+                  setMobileOpen(false);
+                }}
+                className={`group flex items-center gap-2.5 cursor-pointer mb-0.5 px-3 py-2.5 rounded-[10px] border transition-colors duration-150 ${
+                  isActive
+                    ? "bg-indigo-500/10 border-indigo-500/18"
+                    : "bg-transparent border-transparent hover:bg-white/5"
+                }`}
               >
                 <div
-                  className={`flex items-center justify-center shrink-0 w-5 h-5 rounded-lg transition-colors duration-150 ${isActive ? "bg-indigo-500/15 text-indigo-400" : "bg-white/0.05 text-slate-500"}`}
+                  className={`flex items-center justify-center shrink-0 w-7 h-7 rounded-lg ${
+                    isActive
+                      ? "bg-indigo-500/15 text-indigo-400"
+                      : "bg-white/5 text-slate-500"
+                  }`}
                 >
                   <MessageSquare size={13} />
                 </div>
+
+                <span
+                  className={`flex-1 min-w-0 text-[13px] font-medium truncate ${
+                    isActive ? "text-slate-100" : "text-slate-300"
+                  }`}
+                >
+                  {conv?.title || "New Chat"}
+                </span>
+
+                <button
+                  type="button"
+                  title="Delete conversation"
+                  aria-label="Delete conversation"
+                  onClick={(e) => handleDeleteConversation(e, conv)}
+                  className="shrink-0 p-1.5 rounded-md text-slate-500
+      hover:bg-red-500/10 hover:text-red-400
+      opacity-100 lg:opacity-0 lg:group-hover:opacity-100
+      focus:opacity-100"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
             );
           })}
@@ -176,7 +235,6 @@ function SideBar() {
               New Chat
             </button>
           </div>
-
           {conversations.length == 0 ? (
             <div className="px-5 pt-4 pb-1.5 text-[10.5px] font-semibold uppercase tracking-widest text-slate-600">
               No Recent Conversations
@@ -186,10 +244,10 @@ function SideBar() {
               Recents
             </div>
           )}
+          <div className="flex-1 overflow-y-auto px-2.5 pb-2 scrollbar-width:none [&::-webkit-scrollbar]:hidden">
+            {conversations.map((conv) => {
+              const isActive = selectedConversation?._id === conv?._id;
 
-          <div className="flex-1 overflow-y-auto px-2.5 pb-2 scrollbar-width:none [&::-webit-scrollbar]:hidden">
-            {conversations.map((conv, i) => {
-              const isActive = selectedConversation?._id == conv?._id;
               return (
                 <div
                   key={conv._id}
@@ -197,23 +255,43 @@ function SideBar() {
                     dispatch(setSelectedConversation(conv));
                     setMobileOpen(false);
                   }}
-                  className={`flex items-center gap-2.5 cursor-pointer mb-0.5 px-3 py-2.5 rounded-[10px] border transition-colors duration-150 ${isActive ? "bg-indigo-500/10 border-indigo-500/18" : "bg-transparent border-transparent"}`}
+                  className={`group flex items-center gap-2.5 cursor-pointer mb-0.5 px-3 py-2.5 rounded-[10px] border transition-colors duration-150 ${
+                    isActive
+                      ? "bg-indigo-500/10 border-indigo-500/18"
+                      : "bg-transparent border-transparent hover:bg-white/5"
+                  }`}
                 >
                   <div
-                    className={`flex items-center justify-center shrink-0 w-7 h-7 rounded-lg transition-colors duration-150 ${isActive ? "bg-indigo-500/15 text-indigo-400" : "bg-white/0.05 text-slate-500"}`}
+                    className={`flex items-center justify-center shrink-0 w-7 h-7 rounded-lg transition-colors duration-150 ${
+                      isActive
+                        ? "bg-indigo-500/15 text-indigo-400"
+                        : "bg-white/0.05 text-slate-500"
+                    }`}
                   >
                     <MessageSquare size={13} />
                   </div>
+
                   <span
-                    className={`text-[13px] font-medium truncate ${isActive ? "text-slate-100" : "text-slate-300"}`}
+                    className={`flex-1 min-w-0 text-[13px] font-medium truncate ${
+                      isActive ? "text-slate-100" : "text-slate-300"
+                    }`}
                   >
                     {conv?.title || "New Chat"}
                   </span>
+
+                  <button
+                    type="button"
+                    title="Delete conversation"
+                    aria-label={`Delete ${conv?.title || "conversation"}`}
+                    onClick={(e) => handleDeleteConversation(e, conv)}
+                    className="shrink-0 p-1.5 rounded-md text-slate-500 hover:bg-red-500/10 hover:text-red-400 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 focus:opacity-100"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               );
             })}
           </div>
-
           <div className="mx-2.5 h-px bg-white/6" />
           <div className="px-3.5 py-3.5">
             {userData ? (
@@ -237,7 +315,7 @@ function SideBar() {
                     {userData?.name || "user"}
                   </p>
                   <p className="text-[11px] text-slate-600 mt-px">
-                    {`${userData?.plan}`|| "free plan"}
+                    {`${userData?.plan}` || "free plan"}
                   </p>
                 </div>
                 <div className="flex gap-1">
